@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMD Finance Friday Status</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Bebas+Neue&family=Share+Tech+Mono&family=Anton&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --friday-1: #ff0055;
+    --friday-2: #ff9900;
+    --friday-3: #00ff88;
+    --friday-4: #00cfff;
+    --nope-bg: #0a0a0f;
+    --nope-panel: #111118;
+    --nope-border: #222233;
+    --nope-dim: #334;
+    --nope-text: #8899bb;
+    --nope-accent: #2244aa;
+  }
+
+  body {
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--nope-bg);
+    color: var(--nope-text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.5s;
+    cursor: crosshair;
+  }
+
+  body.friday-mode {
+    animation: bgRave 0.4s infinite;
+    cursor: default;
+  }
+
+  @keyframes bgRave {
+    0%   { background: #1a0033; }
+    14%  { background: #003300; }
+    28%  { background: #001a33; }
+    42%  { background: #330015; }
+    57%  { background: #1a1a00; }
+    71%  { background: #00331a; }
+    85%  { background: #330011; }
+    100% { background: #1a0033; }
+  }
+
+  /* ── TICKER ── */
+  .ticker-bar {
+    width: 100%;
+    background: #0d0d1a;
+    border-bottom: 1px solid var(--nope-border);
+    padding: 6px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .friday-mode .ticker-bar {
+    background: rgba(0,0,0,0.7);
+    border-bottom: 2px solid #ff0055;
+  }
+  .ticker-track {
+    display: inline-block;
+    animation: tickerScroll 28s linear infinite;
+    will-change: transform;
+  }
+  @keyframes tickerScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .tick-item {
+    display: inline-block;
+    padding: 0 20px;
+    color: var(--nope-text);
+  }
+  .tick-item .sym { color: #4466cc; }
+  .tick-item .up  { color: #00cc66; }
+  .tick-item .dn  { color: #cc2244; }
+  .friday-mode .tick-item .sym { color: #ff88bb; }
+  .friday-mode .tick-item .up  { color: #00ff99; }
+
+  /* ── HEADER ── */
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--nope-border);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+  }
+  .site-header .logo {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--nope-text);
+    text-transform: uppercase;
+  }
+  .site-header .logo span { color: #4466cc; }
+  .friday-mode .site-header .logo span { color: #ff0055; animation: flicker 0.2s infinite; }
+  @keyframes flicker { 0%,100%{opacity:1} 50%{opacity:0.7} }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #cc2244; display: inline-block; margin-right: 6px;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  .friday-mode .live-dot { background: #00ff88; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+  .header-right {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: #445;
+    text-align: right;
+    line-height: 1.6;
+  }
+  .friday-mode .header-right { color: #ff88bb; }
+
+  /* ── MAIN AREA ── */
+  .main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 120px);
+    padding: 40px 24px;
+    gap: 32px;
+    position: relative;
+  }
+
+  /* ── STATUS PANELS ── */
+  .status-grid {
+    display: flex;
+    gap: 1px;
+    background: var(--nope-border);
+    border: 1px solid var(--nope-border);
+    width: 100%;
+    max-width: 860px;
+  }
+  .panel {
+    background: var(--nope-panel);
+    padding: 10px 16px;
+    flex: 1;
+    min-width: 0;
+  }
+  .panel-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: #334;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .panel-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: var(--nope-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .panel-value.pos { color: #00cc66; }
+  .panel-value.neg { color: #cc2244; }
+  .friday-mode .panel { background: rgba(0,0,0,0.55); }
+  .friday-mode .panel-value { color: #00ff99; }
+  .friday-mode .panel-value.neg { color: #ff3366; }
+  .friday-mode .panel-label { color: #ff88bb; }
+  .friday-mode .status-grid { border-color: #ff0055; background: #ff005533; }
+
+  /* ── MAIN QUESTION ── */
+  .question-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    color: #334;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .friday-mode .question-label {
+    color: #ff88bb;
+    animation: colorCycle 1s infinite;
+  }
+  @keyframes colorCycle {
+    0%  {color:#ff88bb}
+    33% {color:#88ffbb}
+    66% {color:#88bbff}
+    100%{color:#ff88bb}
+  }
+
+  /* ── THE BIG ANSWER ── */
+  .big-answer {
+    font-family: 'Anton', 'Bebas Neue', sans-serif;
+    font-size: clamp(120px, 28vw, 320px);
+    line-height: 0.85;
+    text-align: center;
+    letter-spacing: -0.02em;
+    user-select: none;
+    position: relative;
+    transition: color 0.3s;
+  }
+
+  /* NOT FRIDAY */
+  body:not(.friday-mode) .big-answer {
+    color: #1c1c2e;
+    text-shadow:
+      0 0 0px #2244aa,
+      1px 1px 0 #1a1a28,
+      2px 2px 0 #16162050,
+      3px 3px 0 #12122040;
+    -webkit-text-stroke: 1px #2a2a45;
+  }
+
+  /* IS FRIDAY */
+  .friday-mode .big-answer {
+    -webkit-text-stroke: 0;
+    animation: rainbowText 0.3s infinite, bigPulse 0.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 30px rgba(255,0,85,0.8)) drop-shadow(0 0 60px rgba(0,255,136,0.4));
+  }
+  @keyframes rainbowText {
+    0%  { color: #ff0055; }
+    16% { color: #ff9900; }
+    33% { color: #ffff00; }
+    50% { color: #00ff88; }
+    66% { color: #00cfff; }
+    83% { color: #cc00ff; }
+    100%{ color: #ff0055; }
+  }
+  @keyframes bigPulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.04); }
+  }
+
+  /* ── SUBTEXT ── */
+  .subtext {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(12px, 2vw, 18px);
+    letter-spacing: 0.25em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  body:not(.friday-mode) .subtext { color: #2a2a45; }
+  .friday-mode .subtext {
+    color: #ffffff;
+    animation: colorCycle 0.6s infinite;
+    font-size: clamp(14px, 2.5vw, 22px);
+  }
+
+  /* ── COUNTDOWN / METRIC BLOCK ── */
+  .metric-block {
+    width: 100%;
+    max-width: 860px;
+    border: 1px solid var(--nope-border);
+    background: var(--nope-panel);
+    padding: 18px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+  .friday-mode .metric-block {
+    border-color: #ff0055;
+    background: rgba(0,0,0,0.6);
+    animation: borderFlash 0.5s infinite;
+  }
+  @keyframes borderFlash {
+    0%,100% { border-color: #ff0055; }
+    25%     { border-color: #ff9900; }
+    50%     { border-color: #00ff88; }
+    75%     { border-color: #00cfff; }
+  }
+  .metric-item { min-width: 120px; }
+  .metric-item-label {
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #334;
+    margin-bottom: 4px;
+  }
+  .metric-item-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 22px;
+    color: var(--nope-text);
+  }
+  .metric-item-value.countdown-val {
+    font-size: 32px;
+    color: #cc2244;
+    letter-spacing: 0.05em;
+  }
+  .friday-mode .metric-item-label { color: #ff88bb; }
+  .friday-mode .metric-item-value { color: #00ff99; }
+  .friday-mode .metric-item-value.countdown-val {
+    color: #00ff88;
+    font-size: 32px;
+    animation: colorCycle 0.5s infinite;
+  }
+
+  /* ── CONFETTI CANVAS ── */
+  #confettiCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 50;
+    display: none;
+  }
+  .friday-mode #confettiCanvas { display: block; }
+
+  /* ── SCANLINES OVERLAY ── */
+  .scanlines {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.07) 2px,
+      rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0.5;
+  }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    border-top: 1px solid var(--nope-border);
+    padding: 10px 28px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: #223;
+    background: rgba(0,0,0,0.5);
+    text-transform: uppercase;
+  }
+  .friday-mode .site-footer { color: #ff88bb; border-top-color: #ff0055; }
+
+  /* ── SCROLLING COMMENTARY (friday mode only) ── */
+  .commentary-bar {
+    width: 100%;
+    max-width: 860px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 1px solid var(--nope-border);
+    background: var(--nope-panel);
+    padding: 8px 0;
+    display: none;
+  }
+  .friday-mode .commentary-bar {
+    display: block;
+    border-color: #00ff88;
+    animation: borderFlash 0.5s infinite;
+  }
+  .commentary-track {
+    display: inline-block;
+    animation: tickerScroll 20s linear infinite;
+  }
+  .commentary-track span {
+    padding: 0 24px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+  }
+  .friday-mode .commentary-track span { color: #00ff99; }
+
+  /* responsive */
+  @media (max-width: 600px) {
+    .panel-value { font-size: 11px; }
+    .site-header { padding: 10px 14px; }
+    .main { gap: 20px; padding: 20px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+<div class="scanlines"></div>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="logo">
+    <span class="live-dot"></span>
+    <span>PMD</span> FINANCE FRIDAY STATUS
+  </div>
+  <div class="header-right">
+    <div id="live-clock">--:--:-- UTC</div>
+    <div id="live-date">--- -- ----</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOP PANELS -->
+  <div class="status-grid" id="statusGrid"></div>
+
+  <div class="question-label">▸ IS IT FRIDAY YET? ◂</div>
+
+  <div class="big-answer" id="bigAnswer">NO</div>
+
+  <div class="subtext" id="subText">WEEKEND SIGNAL NOT DETECTED. RETURN TO SPREADSHEETS.</div>
+
+  <!-- COMMENTARY (friday) -->
+  <div class="commentary-bar">
+    <div class="commentary-track" id="commentaryTrack"></div>
+  </div>
+
+  <!-- METRIC BLOCK -->
+  <div class="metric-block">
+    <div class="metric-item">
+      <div class="metric-item-label">TIME UNTIL FRIDAY</div>
+      <div class="metric-item-value countdown-val" id="countdown">--:--:--</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-item-label">CURRENT DAY INDEX</div>
+      <div class="metric-item-value" id="dayIndex">--</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-item-label">FRIDAY PROBABILITY</div>
+      <div class="metric-item-value" id="fridayProb">--%</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-item-label">MORALE INDEX</div>
+      <div class="metric-item-value" id="moraleIndex">--</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-item-label">WEEK PROGRESS</div>
+      <div class="metric-item-value" id="weekProgress">--%</div>
+    </div>
+    <div class="metric-item">
+      <div class="metric-item-label">DAYS SINCE FRIDAY</div>
+      <div class="metric-item-value" id="daysSince">--</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <span>PMD FINANCE GROUP &copy; <span id="year"></span></span>
+  <span id="statusTag">SYSTEM OPERATIONAL</span>
+  <span>REAL-TIME FRIDAY INTELLIGENCE PLATFORM</span>
+</footer>
+
+<script>
+const DAYS = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+const notFridayTicker = [
+  {sym:'WKND', v:'TBD', chg:'+∞%', up:false},
+  {sym:'MOOD', v:'0.04', chg:'-98.1%', up:false},
+  {sym:'JOY', v:'0.00', chg:'-100%', up:false},
+  {sym:'EXCEL', v:'HIGH', chg:'+12.3%', up:true},
+  {sym:'INBOX', v:'CRIT', chg:'+899', up:false},
+  {sym:'MTGS', v:'14', chg:'+6', up:false},
+  {sym:'VLKP', v:'BROKEN', chg:'-ALWAYS', up:false},
+  {sym:'SNACKS', v:'LOW', chg:'-73.4%', up:false},
+  {sym:'SLACK', v:'NOISE', chg:'+∞', up:false},
+  {sym:'Q4FCST', v:'REVISED', chg:'AGAIN', up:false},
+];
+const fridayTicker = [
+  {sym:'WKND', v:'LIVE', chg:'+∞%', up:true},
+  {sym:'MOOD', v:'100.00', chg:'+99999%', up:true},
+  {sym:'JOY', v:'MAX', chg:'+∞', up:true},
+  {sym:'EMAIL', v:'IGNORED', chg:'+100%', up:true},
+  {sym:'VIBE', v:'STRONG', chg:'+420.69%', up:true},
+  {sym:'DRINKS', v:'5PM', chg:'CONFIRMED', up:true},
+  {sym:'EXCEL', v:'CLOSED', chg:'-100%', up:true},
+  {sym:'SNACKS', v:'PLENTY', chg:'+∞', up:true},
+  {sym:'PAGER', v:'OFF', chg:'-100%', up:true},
+  {sym:'FUN', v:'IMMINENT', chg:'+9001%', up:true},
+];
+
+const fridayCommentary = [
+  '🎉 FRIDAY CONFIRMED — PMD FINANCE IS OFFICIALLY OFF-DUTY',
+  '📊 Q4 CONCERNS SUSPENDED UNTIL MONDAY',
+  '🚨 ALL SPREADSHEETS TO BE LEFT UNTOUCHED',
+  '💸 WEEKEND LIQUIDITY AT ALL-TIME HIGH',
+  '📉 PRODUCTIVITY INDEX APPROACHING ZERO — BULLISH SIGNAL',
+  '🥂 PIVOT TO PINTS — EXECUTION IN PROGRESS',
+  '🏆 THE WEEK HAS BEEN SURVIVED',
+  '📩 INBOX ENTERING HIBERNATION MODE',
+  '🎯 KPI: KEY PARTY INITIATIVE — TRACKING GREEN',
+  '📐 VARIANCES NOT OUR PROBLEM UNTIL 8:59AM MONDAY',
+];
+
+const MORALE_BY_DAY = ['TERMINAL','GRIM','BLEAK','LOW','RISING','PEAK','RECOVERING'];
+const SUBTEXT_BY_DAY = [
+  'IT IS SUNDAY. DREAD ACCUMULATING.',
+  'IT IS MONDAY. SYSTEM REBOOT IN PROGRESS.',
+  'TUESDAY. STILL NO. PLEASE CONTINUE RECONCILING.',
+  'WEDNESDAY. YOU ARE EXACTLY HALFWAY TO MEANING.',
+  'THURSDAY. SO CLOSE. YET SO FAR. RUN THE NUMBERS AGAIN.',
+  '', // friday - handled separately
+  'SATURDAY. IT WAS FRIDAY YESTERDAY. REFLECT ON THAT.',
+];
+
+function buildTickerHTML(items) {
+  const doubled = [...items, ...items];
+  return doubled.map(t =>
+    `<span class="tick-item"><span class="sym">${t.sym}</span> ${t.v} <span class="${t.up?'up':'dn'}">${t.chg}</span></span>`
+  ).join('');
+}
+
+function buildCommentaryHTML() {
+  const doubled = [...fridayCommentary, ...fridayCommentary];
+  return doubled.map(s => `<span>${s}</span>`).join('');
+}
+
+function buildPanels(isFriday, day, now) {
+  const panels = isFriday ? [
+    {label:'FRIDAY STATUS', val:'CONFIRMED ✓', cls:'pos'},
+    {label:'WEEKEND MODE', val:'ENGAGED', cls:'pos'},
+    {label:'CURRENT DAY', val:'FRIDAY', cls:'pos'},
+    {label:'FINANCE RISK', val:'ZERO', cls:'pos'},
+    {label:'REPORT DUE', val:'NONE', cls:'pos'},
+    {label:'SYSTEM STATE', val:'PARTY', cls:'pos'},
+  ] : [
+    {label:'FRIDAY STATUS', val:'NOT YET', cls:'neg'},
+    {label:'WEEKEND MODE', val:'LOCKED', cls:'neg'},
+    {label:'CURRENT DAY', val:DAYS[day], cls:''},
+    {label:'FINANCE RISK', val:'ELEVATED', cls:'neg'},
+    {label:'REPORT DUE', val:'PROBABLY', cls:'neg'},
+    {label:'SYSTEM STATE', val:'ENDURE', cls:''},
+  ];
+  return panels.map(p =>
+    `<div class="panel"><div class="panel-label">${p.label}</div><div class="panel-value ${p.cls}">${p.val}</div></div>`
+  ).join('');
+}
+
+function getNextFriday(now) {
+  const d = new Date(now);
+  const day = d.getDay();
+  let daysUntil = (5 - day + 7) % 7;
+  if (daysUntil === 0) daysUntil = 7;
+  d.setDate(d.getDate() + daysUntil);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function getPrevFriday(now) {
+  const d = new Date(now);
+  const day = d.getDay();
+  let daysSince = (day - 5 + 7) % 7;
+  d.setDate(d.getDate() - daysSince);
+  return d;
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return '00:00:00';
+  const totalSec = Math.floor(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+  return [h,m,s].map(n => String(n).padStart(2,'0')).join(':');
+}
+
+// Confetti
+const canvas = document.getElementById('confettiCanvas');
+const ctx = canvas.getContext('2d');
+const confetti = [];
+const COLORS = ['#ff0055','#ff9900','#ffff00','#00ff88','#00cfff','#cc00ff','#ffffff','#ff88bb'];
+const MAX_CONFETTI = 500;
+
+const mouse = { x: -9999, y: -9999, vx: 0, vy: 0, px: -9999, py: -9999 };
+const REPEL_RADIUS = 120;
+const REPEL_STRENGTH = 6;
+
+window.addEventListener('mousemove', e => {
+  mouse.vx = e.clientX - mouse.px;
+  mouse.vy = e.clientY - mouse.py;
+  mouse.px = mouse.x;
+  mouse.py = mouse.y;
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  if (document.body.classList.contains('friday-mode')) {
+    spawnAtMouse(e.clientX, e.clientY);
+  }
+});
+
+window.addEventListener('click', e => {
+  if (document.body.classList.contains('friday-mode')) {
+    spawnBurst(e.clientX, e.clientY, 30);
+  }
+});
+
+function makeParticle(x, y, vx, vy) {
+  return {
+    x, y,
+    w: Math.random() * 11 + 5,
+    h: Math.random() * 5 + 3,
+    color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    vx, vy,
+    rot: Math.random() * Math.PI * 2,
+    vrot: (Math.random() - 0.5) * 0.25,
+    alpha: 1,
+    gravity: 0.12 + Math.random() * 0.08,
+    drag: 0.98,
+  };
+}
+
+function spawnConfetti() {
+  if (confetti.length >= MAX_CONFETTI) return;
+  const count = Math.min(8, MAX_CONFETTI - confetti.length);
+  for (let i = 0; i < count; i++) {
+    confetti.push(makeParticle(
+      Math.random() * canvas.width, -10,
+      (Math.random() - 0.5) * 4,
+      Math.random() * 3 + 1.5
+    ));
+  }
+}
+
+function spawnAtMouse(mx, my) {
+  if (confetti.length >= MAX_CONFETTI) return;
+  const speed = Math.min(Math.sqrt(mouse.vx**2 + mouse.vy**2), 18);
+  if (speed < 2) return;
+  const count = Math.min(3, MAX_CONFETTI - confetti.length);
+  for (let i = 0; i < count; i++) {
+    const angle = Math.atan2(mouse.vy, mouse.vx) + (Math.random() - 0.5) * 1.4;
+    const s = speed * (0.4 + Math.random() * 0.6);
+    confetti.push(makeParticle(mx + (Math.random()-0.5)*10, my + (Math.random()-0.5)*10,
+      Math.cos(angle) * s, Math.sin(angle) * s));
+  }
+}
+
+function spawnBurst(mx, my, count) {
+  const n = Math.min(count, MAX_CONFETTI - confetti.length);
+  for (let i = 0; i < n; i++) {
+    const angle = (i / n) * Math.PI * 2 + Math.random() * 0.4;
+    const speed = 4 + Math.random() * 10;
+    confetti.push(makeParticle(mx, my, Math.cos(angle) * speed, Math.sin(angle) * speed - 4));
+  }
+}
+
+function drawConfetti() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw cursor aura when friday mode
+  if (mouse.x > 0 && document.body.classList.contains('friday-mode')) {
+    const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, REPEL_RADIUS);
+    grad.addColorStop(0, 'rgba(255,255,255,0.06)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, REPEL_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  for (let i = confetti.length - 1; i >= 0; i--) {
+    const c = confetti[i];
+
+    // Mouse repulsion
+    const dx = c.x - mouse.x;
+    const dy = c.y - mouse.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < REPEL_RADIUS && dist > 0) {
+      const force = (1 - dist / REPEL_RADIUS) * REPEL_STRENGTH;
+      c.vx += (dx / dist) * force;
+      c.vy += (dy / dist) * force;
+    }
+
+    // Physics
+    c.vy += c.gravity;
+    c.vx *= c.drag;
+    c.vy *= c.drag;
+    c.x += c.vx;
+    c.y += c.vy;
+    c.rot += c.vrot + (c.vx * 0.02);
+
+    // Bounce off side walls softly
+    if (c.x < 0) { c.x = 0; c.vx = Math.abs(c.vx) * 0.5; }
+    if (c.x > canvas.width) { c.x = canvas.width; c.vx = -Math.abs(c.vx) * 0.5; }
+
+    if (c.y > canvas.height + 30) { confetti.splice(i, 1); continue; }
+
+    ctx.save();
+    ctx.globalAlpha = c.alpha;
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot);
+    ctx.fillStyle = c.color;
+    ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+    ctx.restore();
+  }
+}
+
+let confettiInterval = null;
+let animFrame = null;
+
+function startConfetti() {
+  confettiInterval = setInterval(spawnConfetti, 120);
+  function loop() {
+    drawConfetti();
+    animFrame = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function stopConfetti() {
+  clearInterval(confettiInterval);
+  cancelAnimationFrame(animFrame);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  confetti.length = 0;
+}
+
+// Main update loop
+let wasFriday = null;
+
+function update() {
+  const now = new Date();
+  const day = now.getDay();
+  const isFriday = (day === 5);
+
+  // Clock
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('live-clock').textContent = `${hh}:${mm}:${ss} LOC`;
+  document.getElementById('live-date').textContent = `${DAYS[day].slice(0,3)} ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('year').textContent = now.getFullYear();
+
+  // Toggle body class
+  if (isFriday !== wasFriday) {
+    if (isFriday) {
+      document.body.classList.add('friday-mode');
+      document.getElementById('tickerTrack').innerHTML = buildTickerHTML(fridayTicker);
+      document.getElementById('commentaryTrack').innerHTML = buildCommentaryHTML();
+      startConfetti();
+    } else {
+      document.body.classList.remove('friday-mode');
+      document.getElementById('tickerTrack').innerHTML = buildTickerHTML(notFridayTicker);
+      stopConfetti();
+    }
+    wasFriday = isFriday;
+  }
+
+  // Big answer
+  document.getElementById('bigAnswer').textContent = isFriday ? 'YES' : 'NO';
+
+  // Subtext
+  document.getElementById('subText').textContent = isFriday
+    ? '🎉 IT IS FRIDAY. PMD FINANCE HAS LEFT THE BUILDING. 🎉'
+    : SUBTEXT_BY_DAY[day];
+
+  // Panels
+  document.getElementById('statusGrid').innerHTML = buildPanels(isFriday, day, now);
+
+  // Countdown
+  const nextFriday = getNextFriday(now);
+  const msLeft = nextFriday - now;
+  const countdownEl = document.getElementById('countdown');
+  if (isFriday) {
+    countdownEl.textContent = '00:00:00';
+  } else {
+    countdownEl.textContent = formatCountdown(msLeft);
+  }
+
+  // Day index (0=Sun, 5=Fri)
+  document.getElementById('dayIndex').textContent = `${day} / 7`;
+
+  // Friday probability (0% mon–thu, 100% fri)
+  const prob = isFriday ? '100%' : (day === 4 ? '14%' : day === 3 ? '5%' : day === 2 ? '2%' : day === 1 ? '1%' : '0%');
+  document.getElementById('fridayProb').textContent = prob;
+
+  // Morale
+  document.getElementById('moraleIndex').textContent = MORALE_BY_DAY[day];
+
+  // Week progress (Mon=0 → Fri=100)
+  const wday = day === 0 ? 0 : day === 6 ? 100 : Math.round(((day - 1) / 4) * 100);
+  document.getElementById('weekProgress').textContent = isFriday ? '100%' : `${wday}%`;
+
+  // Days since Friday
+  const prevFri = getPrevFriday(now);
+  const daysSince = isFriday ? 0 : Math.round((now - prevFri) / (1000*60*60*24));
+  document.getElementById('daysSince').textContent = daysSince;
+
+  // Footer tag
+  document.getElementById('statusTag').textContent = isFriday ? '⚡ FRIDAY ACTIVE — SYSTEMS PARTY' : 'SYSTEM: WEEKDAY DETECTED';
+}
+
+// Init
+document.getElementById('tickerTrack').innerHTML = buildTickerHTML(notFridayTicker);
+update();
+setInterval(update, 1000);
+</script>
+</body>
+</html>

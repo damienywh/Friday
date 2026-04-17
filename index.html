@@ -368,6 +368,55 @@
   }
   .friday-mode .commentary-track span { color: #00ff99; }
 
+  /* ── DOPAMINE BUTTON ── */
+  .dopamine-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .dopamine-btn {
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(18px, 3vw, 26px);
+    letter-spacing: 0.15em;
+    padding: 22px 52px;
+    border: 3px solid #2a2a50;
+    background: #0d0d1a;
+    color: #2a2a60;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.08s, border-color 0.2s, color 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dopamine-btn:hover { border-color: #3a3a70; color: #4455aa; }
+  .dopamine-btn:active { transform: scale(0.94); }
+  .friday-mode .dopamine-btn {
+    border: 3px solid #ff0055;
+    background: rgba(0,0,0,0.6);
+    color: #ffffff;
+    animation: btnGlow 0.6s infinite;
+    font-size: clamp(20px, 3.5vw, 30px);
+  }
+  @keyframes btnGlow {
+    0%,100% { border-color:#ff0055; box-shadow: 0 0 20px #ff005588, 0 0 60px #ff005533; }
+    25%     { border-color:#ff9900; box-shadow: 0 0 20px #ff990088; }
+    50%     { border-color:#00ff88; box-shadow: 0 0 20px #00ff8888; }
+    75%     { border-color:#00cfff; box-shadow: 0 0 20px #00cfff88; }
+  }
+  .friday-mode .dopamine-btn:hover { transform: scale(1.04); }
+  .friday-mode .dopamine-btn:active { transform: scale(0.93); }
+  .btn-feedback {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #223;
+    min-height: 18px;
+    text-align: center;
+  }
+  .friday-mode .btn-feedback { color: #ff88bb; }
+
   /* responsive */
   @media (max-width: 600px) {
     .panel-value { font-size: 11px; }
@@ -409,6 +458,12 @@
   <div class="big-answer" id="bigAnswer">NO</div>
 
   <div class="subtext" id="subText">WEEKEND SIGNAL NOT DETECTED. RETURN TO SPREADSHEETS.</div>
+
+  <!-- DOPAMINE BUTTON -->
+  <div class="dopamine-wrap">
+    <button class="dopamine-btn" id="dopamineBtn" onclick="hitTheButton()">🎉 HIT ME</button>
+    <div class="btn-feedback" id="btnFeedback"></div>
+  </div>
 
   <!-- COMMENTARY (friday) -->
   <div class="commentary-bar">
@@ -788,6 +843,73 @@ function update() {
 
   // Footer tag
   document.getElementById('statusTag').textContent = isFriday ? '⚡ FRIDAY ACTIVE — SYSTEMS PARTY' : 'SYSTEM: WEEKDAY DETECTED';
+}
+
+// ── DOPAMINE BUTTON ──
+const FRIDAY_SOUND = 'https://www.myinstants.com/media/sounds/its-friday-then-saturday-sunday-dancing-original-video-mufasa-1.mp3';
+
+const notFridayResponses = [
+  'NOT TODAY. BACK TO THE PIVOT TABLE.',
+  'BUTTON LOCKED. INSUFFICIENT FRIDAY.',
+  'ERROR 404: FRIDAY NOT FOUND.',
+  'AUTHORISATION DENIED. SEE YOUR LINE MANAGER.',
+  'SYSTEM CANNOT COMPLY. IT IS ' + (()=>{const d=new Date();return['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'][d.getDay()]})() + '.',
+  'MORALE BUTTON REQUIRES FRIDAY CLEARANCE.',
+  'TRY AGAIN IN ' + (()=>{const d=new Date();return 5-d.getDay()<=0?'0':String(5-d.getDay())})() + ' DAYS.',
+  'REQUEST REJECTED. PLEASE RETURN TO EXCEL.',
+];
+
+const fridayResponses = [
+  '🔥 YESSS LET\'S GOOO!!',
+  '💸 WEEKEND LIQUIDITY CONFIRMED',
+  '🎉 PMD FINANCE IS IN THE BUILDING',
+  '🥂 PIVOT TO PINTS AUTHORISED',
+  '📉 PRODUCTIVITY: ZERO. VIBES: INFINITE.',
+  '🏆 YOU SURVIVED ANOTHER WEEK!!',
+  '🚀 MORALE INDEX: ASTRONOMICAL',
+  '🎊 DOPAMINE DELIVERED. YOU\'RE WELCOME.',
+];
+
+let audio = null;
+let btnCooldown = false;
+let responseIdx = 0;
+let fridayResponseIdx = 0;
+
+function hitTheButton() {
+  if (btnCooldown) return;
+  const isFriday = new Date().getDay() === 5;
+  const feedback = document.getElementById('btnFeedback');
+  const btn = document.getElementById('dopamineBtn');
+
+  if (isFriday) {
+    // Play sound
+    if (audio) { audio.pause(); audio.currentTime = 0; }
+    audio = new Audio(FRIDAY_SOUND);
+    audio.volume = 0.85;
+    audio.play().catch(() => {});
+
+    // Confetti explosion from button
+    const rect = btn.getBoundingClientRect();
+    spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 40);
+
+    feedback.textContent = fridayResponses[fridayResponseIdx % fridayResponses.length];
+    fridayResponseIdx++;
+    btn.textContent = '🔥 AGAIN!!';
+  } else {
+    feedback.textContent = notFridayResponses[responseIdx % notFridayResponses.length];
+    responseIdx++;
+    btn.textContent = '🚫 DENIED';
+    btn.style.color = '#cc2244';
+    btn.style.borderColor = '#cc2244';
+    setTimeout(() => {
+      btn.textContent = '🎉 HIT ME';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1200);
+  }
+
+  btnCooldown = true;
+  setTimeout(() => { btnCooldown = false; }, 800);
 }
 
 // Init
